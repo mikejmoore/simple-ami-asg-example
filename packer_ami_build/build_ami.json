@@ -1,0 +1,45 @@
+{
+  "builders": [
+    {
+      "type":               "amazon-ebs",
+      "ami_description":    "My Custom ASG Instance",
+      "access_key":         "{{user `aws_access_key`}}",
+      "secret_key":         "{{user `aws_secret_key`}}",
+      "region":             "{{user `aws_region`}}",
+      "source_ami_filter": {
+        "filters": {
+          "virtualization-type": "hvm",
+          "name": "amzn-ami-hvm-2017.03.0.20170417*x86_64-gp2",
+          "root-device-type": "ebs"
+        }
+      },
+      "instance_type":      "t2.micro",
+      "ssh_username":       "ec2-user",
+      "ssh_timeout":        "10m",
+      "ami_name":           "custom-nginx-image",
+      "vpc_id":             "{{ user `vpc_id`}}",
+      "security_group_id":  "{{ user `security_group_id`}}",
+      "subnet_id":          "{{ user `subnet_id`}}",
+      "associate_public_ip_address": true,
+      "tags": {
+        "owner": "Me",
+        "environment": "testing",
+        "service": "nginx",
+        "version": "1.0",
+        "component": "ami"
+      }
+    }
+  ],
+  "provisioners": [
+    {
+        "type": "ansible",
+        "playbook_file": "./ansible-playbooks/nginx_image_pb.yaml",
+        "extra_arguments": [ "-v", "--extra-vars", "hosts='default'" ],
+        "user": "ec2-user",
+        "host_alias": "default",
+        "ansible_env_vars": ["ANSIBLE_HOST_KEY_CHECKING=False",
+            "ANSIBLE_SSH_ARGS='-o ForwardAgent=yes -o ControlMaster=auto -o ControlPersist=60s'",
+            "ANSIBLE_NOCOLOR=True"]
+    }
+  ]
+}

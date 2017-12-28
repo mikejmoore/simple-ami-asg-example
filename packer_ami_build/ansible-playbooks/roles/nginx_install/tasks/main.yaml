@@ -1,0 +1,27 @@
+---
+- name: "Create user: nginx"
+  become: true
+  user:
+    name: nginx
+    comment: "Node User"
+
+- name: Install Nginx
+  become: true
+  yum:
+    name: "nginx"
+    state: present
+
+- name: Ensure NGinx is enabled on boot.
+  become: true
+  service:
+    name: nginx
+    state: stopped
+    enabled: "true"
+
+- name: Copy web pages to instance
+  become: true
+  copy:
+    src: index.html
+    dest: /usr/share/nginx/html/
+    owner: nginx
+    mode: "u=r"
